@@ -1,5 +1,7 @@
 # polymarket-agent
 
+![status](https://img.shields.io/badge/status-active-brightgreen) ![python](https://img.shields.io/badge/python-3.10%2B-blue) ![license](https://img.shields.io/badge/license-MIT-lightgrey)
+
 **Research-first Polymarket scanning agent** for data-science workflows.
 
 Scan active markets via the public [Gamma API](https://docs.polymarket.com/), score simple research signals, save JSON snapshots, and optionally **paper-trade** into a local ledger. **No private keys. No on-chain orders by default.**
