@@ -1,5 +1,8 @@
 # polymarket-agent
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![GitHub stars](https://img.shields.io/github/stars/tapheret2/polymarket-agent?style=social)](https://github.com/tapheret2/polymarket-agent/stargazers)
 ![status](https://img.shields.io/badge/status-active-brightgreen) ![python](https://img.shields.io/badge/python-3.10%2B-blue) ![license](https://img.shields.io/badge/license-MIT-lightgrey)
 
 **Research-first Polymarket scanning agent** for data-science workflows.
@@ -116,3 +119,17 @@ MIT © 2026 Phạm Tiến Phát ([@tapheret2](https://github.com/tapheret2))
 ## Related
 
 If you use [Grok](https://x.ai) / agent skills locally, pair this repo with research skills (`polymarket`, `prediction-markets`, `ds-project`) for writeups — code lives here.
+
+## Why this repo
+- Research-first Polymarket scanning (not a black-box trading bot)
+- Paper-trading friendly workflow for DS students
+- Reproducible scans under `data/`
+
+## Quick demo
+```bash
+pip install -e ".[dev]"
+# see README install section for full CLI
+pytest -q
+```
+
+Educational only — not financial advice.
