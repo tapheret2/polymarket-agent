@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from polymarket_agent.models import Market, Signal
 
 
-def _clamp(p: float, lo: float = 0.02, hi: float = 0.98) -> float:
+def _clamp(p: float, lo: float = 0.001, hi: float = 0.999) -> float:
     return max(lo, min(hi, p))
 
 
@@ -48,13 +48,12 @@ def baseline_model_prob(market: Market) -> tuple[float, list[str]]:
     if vol < 1_000:
         reasons.append("low_volume_flag")
 
-    # Near-certain prices: slight mean reversion for research score only
-    if p > 0.9:
-        p = p - 0.02
-        reasons.append("fade_extreme_yes_slightly")
-    elif p < 0.1:
-        p = p + 0.02
-        reasons.append("fade_extreme_no_slightly")
+    # Extreme prices: do NOT invent edge — keep mid, flag only.
+    # (v0.1.1: earlier fade created fake +2¢ edges on longshots.)
+    if p >= 0.95 or p <= 0.05:
+        reasons.append("extreme_price_no_edge_boost")
+    elif p > 0.9 or p < 0.1:
+        reasons.append("near_extreme_price")
 
     dte = days_to_end(market)
     if dte is not None:

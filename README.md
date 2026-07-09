@@ -13,8 +13,10 @@ Built for students / builders who care about **AI + markets + data**, not casino
 | **Scan** | Pull active markets (volume-ordered), filter by liquidity |
 | **Analyze** | Market mid vs lightweight prior → edge / score / reasons |
 | **Snapshot** | JSON dumps under `data/raw/` for later ML / Brier eval |
+| **Eval** | Join snapshots to resolved markets → **Brier / log-loss** |
+| **Daily job** | `pm-agent daily-scan` (+ PowerShell/bash scripts, Docker) |
 | **Paper book** | Virtual bankroll fills in `data/processed/paper_book.json` |
-| **CLI** | `pm-agent scan`, `search`, `paper-run`, `paper-status` |
+| **CLI** | `scan`, `search`, `daily-scan`, `eval`, `paper-run`, `paper-status` |
 
 > **Disclaimer:** Educational / research software. Prediction markets involve risk of loss. This is **not** financial advice. The baseline model is intentionally simple — beat it with your own models.
 
@@ -36,11 +38,28 @@ pip install -e ".[dev]"
 
 pm-agent scan --limit 40 --top 15
 pm-agent search "bitcoin"
+pm-agent daily-scan
+pm-agent eval --closed-benchmark
 pm-agent paper-run --max-trades 2
 pm-agent paper-status
 ```
 
 Copy `.env.example` → `.env` to tune bankroll / min liquidity.
+
+### Docker
+
+```bash
+docker build -t polymarket-agent .
+docker run --rm -v "${PWD}/data:/app/data" polymarket-agent daily-scan
+docker run --rm -v "${PWD}/data:/app/data" polymarket-agent eval
+```
+
+### Windows daily schedule
+
+```powershell
+# Task Scheduler → Action:
+powershell -File C:\Users\ADMIN\projects\polymarket-agent\scripts\daily_scan.ps1
+```
 
 ## Architecture
 
@@ -66,12 +85,14 @@ Starts from market mid price, then soft adjustments:
 
 Replace `baseline_model_prob` with your DS model (calibration, LLM features, ensembles).
 
-## Data science roadmap
+## Data science loop (built-in)
 
-1. Log daily snapshots → parquet  
-2. After resolution, join outcomes → **Brier / log score**  
-3. Compare model vs market over time  
-4. Optional: CLOB trading (advanced; requires wallet + compliance — out of scope for v0.1)
+1. **`daily-scan`** logs forecasts under `data/raw/scan_*.json`  
+2. **`eval`** joins to resolved markets → Brier / log-loss under `data/processed/eval_*.json`  
+3. Compare `brier_model` vs `brier_market` over weeks  
+4. Swap `baseline_model_prob` for your model when it beats the market on eval  
+
+Optional later: parquet export, CLOB live trading (wallet + compliance — not in v0.1.x).
 
 ## Tests
 

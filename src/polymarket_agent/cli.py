@@ -122,5 +122,49 @@ def search(q: str = typer.Argument(..., help="Search text")) -> None:
         agent.close()
 
 
+@app.command("daily-scan")
+def daily_scan(
+    limit: int = typer.Option(50),
+    top: int = typer.Option(20),
+    paper: bool = typer.Option(False, help="Also paper-trade top edges"),
+) -> None:
+    """Idempotent daily job: scan → snapshot → optional paper → print path."""
+    agent = PolymarketAgent()
+    try:
+        signals = agent.run_once(
+            limit=limit, top_k=top, paper_trade=paper, max_paper=3 if paper else 0
+        )
+        path = agent.snapshot(signals)
+        _print_signals(signals[: min(10, len(signals))], title="Daily scan (top 10)")
+        console.print(f"[green]OK[/green] snapshot={path}")
+        if paper:
+            console.print(agent.paper.summary())
+    finally:
+        agent.close()
+
+
+@app.command()
+def eval(
+    closed_benchmark: bool = typer.Option(
+        False, help="Also score pinned prices on closed markets"
+    ),
+) -> None:
+    """Evaluate saved snapshots vs resolved markets (Brier / log-loss)."""
+    from polymarket_agent.eval import benchmark_closed_sample, evaluate_snapshots
+
+    report = evaluate_snapshots()
+    summary = report.summary()
+    console.print("[bold]Snapshot evaluation[/bold]")
+    console.print(summary)
+    if summary.get("n_resolved_pairs", 0) == 0:
+        console.print(
+            "[yellow]No resolved joins yet.[/yellow] Run `daily-scan` over days, "
+            "then re-run eval after markets resolve."
+        )
+    if closed_benchmark:
+        console.print("[bold]Closed-market price pin benchmark[/bold]")
+        console.print(benchmark_closed_sample(n=40))
+
+
 if __name__ == "__main__":
     app()
