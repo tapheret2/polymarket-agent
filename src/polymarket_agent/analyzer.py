@@ -123,3 +123,13 @@ def score_market(market: Market, bankroll: float = 1000.0) -> Signal:
 def rank_signals(markets: list[Market], bankroll: float = 1000.0) -> list[Signal]:
     signals = [score_market(m, bankroll=bankroll) for m in markets]
     return sorted(signals, key=lambda s: s.score, reverse=True)
+
+
+def signed_edge(model_p: float, market_p: float) -> float:
+    """Model minus market probability (positive => long YES edge)."""
+    return float(model_p) - float(market_p)
+
+
+def edge_passes(model_p: float, market_p: float, min_abs: float = 0.03) -> bool:
+    """True when absolute edge exceeds *min_abs*."""
+    return abs(signed_edge(model_p, market_p)) >= float(min_abs)
